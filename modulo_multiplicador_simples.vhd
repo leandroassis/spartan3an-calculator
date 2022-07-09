@@ -26,8 +26,8 @@ entity modulo_multiplicador_simples is
 		DIGITO_1 : in unsigned(3 downto 0);
 		DIGITO_2 : in unsigned(3 downto 0);
 		CARRY_IN : in unsigned(3 downto 0);
-		RESULT : out unsigned(3 downto 0);
-		CARRY_OUT  : out unsigned(3 downto 0)
+		CARRY_OUT  : out unsigned(3 downto 0);
+		RESULT : out unsigned(3 downto 0)
 	);
 end modulo_multiplicador_simples;
 

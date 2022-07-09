@@ -15,10 +15,10 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity modulo_somador_simples is
 	port(
-		A  : in unsigned(3 downto 0);
-		B  : in unsigned(3 downto 0);
-		C_IN  : in unsigned(3 downto 0);
-		C_OUT : out unsigned(3 downto 0);
+		DIGITO_1  : in unsigned(3 downto 0);
+		DIGITO_2  : in unsigned(3 downto 0);
+		CARRY_IN  : in unsigned(3 downto 0);
+		CARRY_OUT : out unsigned(3 downto 0);
 		RESULT 	: out unsigned(3 downto 0)
 	);
 end modulo_somador_simples;
@@ -30,7 +30,7 @@ architecture Behavioral of modulo_somador_simples is
 	
 begin
 	-- Atribui a soma dos dois digitos mais o carry in
-	resultado <= resize(A, 5)+resize(B,5)+resize(C_IN,5);
+	resultado <= resize(DIGITO_1, 5)+resize(DIGITO_2, 5)+resize(CARRY_IN, 5);
 	
 	process(resultado)
 	begin
