@@ -36,11 +36,11 @@ begin
 	begin
 		if resultado > 9 then
 			-- Se o resultado ultrapassa 9
-			C_OUT <= "0001"; -- Seta o carry em 1
+			CARRY_OUT <= "0001"; -- Seta o carry em 1
 			RESULT <= resize((resultado+6), 4); -- Soma 6 ao segundo dígito (ultimos 4 bits) da resposta e coloca na saída
 		else 
 			-- Se o resultado não ultrapassa 9
-			C_OUT <= "0000";	-- Não seta o carry
+			CARRY_OUT <= "0000";	-- Não seta o carry
 			RESULT <= resize(resultado, 4); -- Apresenta o segundo digito na saida (ultimos 4 bits)
 		end if;
 	end process;
