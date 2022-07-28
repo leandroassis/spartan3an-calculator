@@ -15,11 +15,11 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity modulo_somador_simples is
 	port(
-		DIGITO_1  : in unsigned(3 downto 0);
-		DIGITO_2  : in unsigned(3 downto 0);
-		CARRY_IN  : in unsigned(3 downto 0);
-		CARRY_OUT : out unsigned(3 downto 0);
-		RESULT 	: out unsigned(3 downto 0)
+		DIGITO_1  : in std_logic_vector(3 downto 0);
+		DIGITO_2  : in std_logic_vector(3 downto 0);
+		CARRY_IN  : in std_logic_vector(3 downto 0);
+		CARRY_OUT : out std_logic_vector(3 downto 0);
+		RESULT 	: out std_logic_vector(3 downto 0)
 	);
 end modulo_somador_simples;
 
@@ -30,18 +30,18 @@ architecture Behavioral of modulo_somador_simples is
 	
 begin
 	-- Atribui a soma dos dois digitos mais o carry in
-	resultado <= resize(DIGITO_1, 5)+resize(DIGITO_2, 5)+resize(CARRY_IN, 5);
+	resultado <= resize(unsigned(DIGITO_1), 5)+resize(unsigned(DIGITO_2), 5)+resize(unsigned(CARRY_IN), 5);
 	
 	process(resultado)
 	begin
 		if resultado > 9 then
 			-- Se o resultado ultrapassa 9
 			CARRY_OUT <= "0001"; -- Seta o carry em 1
-			RESULT <= resize((resultado+6), 4); -- Soma 6 ao segundo dígito (ultimos 4 bits) da resposta e coloca na saída
+			RESULT <= std_logic_vector(resize((resultado+6), 4)); -- Soma 6 ao segundo dígito (ultimos 4 bits) da resposta e coloca na saída
 		else 
 			-- Se o resultado não ultrapassa 9
 			CARRY_OUT <= "0000";	-- Não seta o carry
-			RESULT <= resize(resultado, 4); -- Apresenta o segundo digito na saida (ultimos 4 bits)
+			RESULT <= std_logic_vector(resize(resultado, 4)); -- Apresenta o segundo digito na saida (ultimos 4 bits)
 		end if;
 	end process;
 end Behavioral;

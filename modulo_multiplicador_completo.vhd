@@ -34,11 +34,11 @@ end modulo_multiplicador_completo;
 architecture Behavioral of modulo_multiplicador_completo is
 	component modulo_multiplicador_simples
 		port(
-			DIGITO_1 : in unsigned(3 downto 0);
-			DIGITO_2 : in unsigned(3 downto 0);
-			CARRY_IN : in unsigned(3 downto 0);
-			CARRY_OUT  : out unsigned(3 downto 0);
-			RESULT : out unsigned(3 downto 0)
+			DIGITO_1 : in std_logic_vector(3 downto 0);
+			DIGITO_2 : in std_logic_vector(3 downto 0);
+			CARRY_IN : in std_logic_vector(3 downto 0);
+			CARRY_OUT  : out std_logic_vector(3 downto 0);
+			RESULT : out std_logic_vector(3 downto 0)
 		);
 	end component;
 	

@@ -23,11 +23,11 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity modulo_multiplicador_simples is
 	port(
-		DIGITO_1 : in unsigned(3 downto 0);
-		DIGITO_2 : in unsigned(3 downto 0);
-		CARRY_IN : in unsigned(3 downto 0);
-		CARRY_OUT  : out unsigned(3 downto 0);
-		RESULT : out unsigned(3 downto 0)
+		DIGITO_1 : in std_logic_vector(3 downto 0);
+		DIGITO_2 : in std_logic_vector(3 downto 0);
+		CARRY_IN : in std_logic_vector(3 downto 0);
+		CARRY_OUT  : out std_logic_vector(3 downto 0);
+		RESULT : out std_logic_vector(3 downto 0)
 	);
 end modulo_multiplicador_simples;
 
@@ -37,7 +37,7 @@ architecture Behavioral of modulo_multiplicador_simples is
 	signal aux : unsigned (7 downto 0) := "00000000";
 
 begin
-	resultado <= DIGITO_1*DIGITO_2 + CARRY_IN;
+	resultado <= unsigned(DIGITO_1)*unsigned(DIGITO_2) + unsigned(CARRY_IN);
 	
 	process(resultado)
 	begin
@@ -62,8 +62,8 @@ begin
 		end if;
 	end process;
 	
-	CARRY_OUT <= aux(7 downto 4);
-	RESULT <= aux(3 downto 0);
+	CARRY_OUT <= std_logic_vector(aux(7 downto 4));
+	RESULT <= std_logic_vector(aux(3 downto 0));
 	
 end Behavioral;
 
