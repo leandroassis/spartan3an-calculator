@@ -51,8 +51,8 @@ begin
 	
 	A(1) <= "0010";
 	A(0) <= "0101";
-	somador : modulo_somador_completo port map(A, B, RESULTA);
-	multiplicador : modulo_multiplicador_completo port map(A, B, RESULTAD);
+	--somador : modulo_somador_completo port map(A, B, RESULTA);
+	--multiplicador : modulo_multiplicador_completo port map(A, B, RESULTAD);
 
 end Behavioral;
 

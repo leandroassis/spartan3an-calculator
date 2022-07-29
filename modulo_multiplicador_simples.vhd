@@ -35,7 +35,7 @@ architecture Behavioral of modulo_multiplicador_simples is
 	
 	signal resultado : unsigned (7 downto 0) := "00000000";
 	signal aux : unsigned (7 downto 0) := "00000000";
-
+	
 begin
 	resultado <= unsigned(DIGITO_1)*unsigned(DIGITO_2) + unsigned(CARRY_IN);
 	
