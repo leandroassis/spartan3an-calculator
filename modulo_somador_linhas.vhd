@@ -49,8 +49,8 @@ architecture Behavioral of modulo_somador_linhas is
 													      ('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'));
 	signal aux : array_BCD_6DIGITOS :=       (('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'),
 													      ('0', '0', '0', '0'), ('0', '0', '0', '0'));
-	signal carry_aux : array_BCD_6DIGITOS := (('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'),
-													      ('0', '0', '0', '0'), ('0', '0', '0', '0'));
+	signal carry_aux : array_BCD_5DIGITOS := (('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'),
+													      ('0', '0', '0', '0'));
 begin
 	resultado(0) <= linha0(0); -- coluna 0
 	
@@ -71,6 +71,6 @@ begin
 	coluna5_1: modulo_somador_simples port map(aux(5), linha3(2), carry_aux(5), carry(4), resultado(5)); -- coluna 5
 	
 	coluna6: modulo_somador_simples port map(linha2(4), linha3(3), carry(4), carry(5), resultado(6)); -- coluna 6
-	coluna7: modulo_somador_simples port map(linha3(4), "0000", carry(5), carry(6), resultado(7)); -- coluna 7
+	coluna7: modulo_somador_simples port map(linha3(4), "0000", carry(5), open, resultado(7)); -- coluna 7
 end Behavioral;
 
