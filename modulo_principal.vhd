@@ -23,7 +23,6 @@ use work.BCD.all;
 
 entity modulo_principal is
 	port(
-		le_kbd : in std_logic;
 		op_code : in std_logic_vector(3 downto 0);
 		reset_maq : in std_logic;
 		clk : in std_logic
@@ -62,58 +61,101 @@ architecture Behavioral of modulo_principal is
 	signal estado_atual, proximo_estado : estados_maquina := digito0_0;
 	signal numero_code : std_logic_vector(3 downto 0);
 	signal A,B : array_BCD_4DIGITOS;
+	signal write_lcd, next_step, is_empty : std_logic;
 	
 begin
 	
-	lcd : lcd port map(code_escrita, enter_press, LED=>LED , LCD_DB=>LCD_DB, RS=>RS, RW=>RW, clk, OE=>OE, reset_maq);
+	lcd : lcd port map(code_escrita, write_lcd, LED=>LED , LCD_DB=>LCD_DB, RS=>RS, RW=>RW, clk, OE=>OE, reset_maq);
 	
-	kbd: kbd_code port map(clk, reset_maq, ps2d=>ps2d, ps2c=>ps2c, le_kbd, numero_code, open);
+	kbd: kb_code port map(clk, reset_maq, ps2d=>ps2d, ps2c=>ps2c, not is_empty, numero_code, is_empty);
 	
 	-- FSM para ler digitos
+	
+	process(numero_code)
+	begin
+		if numero_code(3 downto 0) = X"1101" then
+			estado_atual <= proximo_estado;
+		end if;
+	end process;
 	
 	process(clk)
 		begin
 			if clk'event and clk = '1' then
-				estado_atual <= proximo_estado;
+				write_lcd <= send_to_lcd;
+			elsif clk'event and clk='0' then
+				write_lcd <= '0';
 			end if;
 	end process;
 	
-	process(le_kbd, reset_maq)
+	process(numero_code, reset_maq)
 		begin
 			if reset_maq = '1' then
 				proximo_estado <= digito0_0;
 			else 
 				case estado_atual is
 					when digito0_0 =>
-						A(0) <= numero_code;
-						proximo_estado <= digito0_1;
-						out_en <= '0';
+						if numero_code /= X"0D" then
+							A(0) <= numero_code;
+							proximo_estado <= digito0_1;
+						else 
+							proximo_estado <= digito0_0;
+						end if;
 					when digito0_1 =>
-						A(1) <= numero_code;
-						proximo_estado <= digito0_2;
+						if numero_code /= X"0D" then
+							A(0) <= numero_code;
+							proximo_estado <= digito0_1;
+						else 
+							proximo_estado <= digito0_0;
+						end if;
 					when digito0_2 =>
-						A(2) <= numero_code;
-						proximo_estado <= digito0_3;
+						if numero_code /= X"0D" then
+							A(0) <= numero_code;
+							proximo_estado <= digito0_1;
+						else 
+							proximo_estado <= digito0_0;
+						end if;
 					when digito0_3 =>
-						A(3) <= numero_code;
-						proximo_estado <= operacao;
+						if numero_code /= X"0D" then
+							A(0) <= numero_code;
+							proximo_estado <= digito0_1;
+						else 
+							proximo_estado <= digito0_0;
+						end if;
 					when operacao =>
-						proximo_estado <= digito1_0;
+						if numero_code /= X"0D" then
+							A(0) <= numero_code;
+							proximo_estado <= digito0_1;
+						else 
+							proximo_estado <= digito0_0;
+						end if;
 					when digito1_0 =>
-						B(0) <= numero_code;
-						proximo_estado <= digito1_1;
+						if numero_code /= X"0D" then
+							A(0) <= numero_code;
+							proximo_estado <= digito0_1;
+						else 
+							proximo_estado <= digito0_0;
+						end if;
 					when digito1_1 =>
-						B(1) <= numero_code;
-						proximo_estado <= digito1_2;
+						if numero_code /= X"0D" then
+							A(0) <= numero_code;
+							proximo_estado <= digito0_1;
+						else 
+							proximo_estado <= digito0_0;
+						end if;
 					when digito1_2 =>
-						B(2) <= numero_code;
-						proximo_estado <= digito1_3;
+						if numero_code /= X"0D" then
+							A(0) <= numero_code;
+							proximo_estado <= digito0_1;
+						else 
+							proximo_estado <= digito0_0;
+						end if;
 					when digito1_3 =>
-						B(3) <= numero_code;
-						proximo_estado <= igual;
-					when igual =>
-						out_en <= '1';
-						proximo_estado <= resultado;
+						if numero_code /= X"0D" then
+							A(0) <= numero_code;
+							proximo_estado <= digito0_1;
+						else 
+							proximo_estado <= digito0_0;
+						end if;
 					when resultado =>
 						proximo_estado <= resultado;
 						out_en <= '1';
