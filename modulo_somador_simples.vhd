@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------------------
 -- Engineer: Leandro Assis dos Santos
 -- 
--- Create Date:    15:52:05 07/08/2022 
+-- Create Date:    15:52:05 08/07/2022 
 -- Module Name:    modulo_somador_completo - Behavioral 
 -- Description: 	somador BCD simples de 2 dígitos
 

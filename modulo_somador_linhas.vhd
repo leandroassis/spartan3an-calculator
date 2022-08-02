@@ -1,24 +1,24 @@
 ----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
+-- Engineer: Leandro Assis dos Santos
 -- 
--- Create Date:    19:00:26 07/09/2022 
--- Design Name: 
--- Module Name:    modulo_somador_linhas - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
---
--- Dependencies: 
---
--- Revision: 
--- Revision 0.01 - File Created
--- Additional Comments: 
---
+-- Create Date:    20:33:03 16/07/2022  
+-- Module Name:    modulo_multiplicador_completo - Behavioral 
+
+-- Description: Recebe as 4 linhas resultantes da multiplicação de A e B e faz a soma
+-- das colunas
+
+--        					      coluna4  coluna 3  coluna 2  coluna 1 coluna 0
+--	linha 0 		   			               A0B3      A0B2      A0B1     A0B0 
+--	linha 1    		   		     A1B3      A1B2      A1B1      A1B0 
+--	linha 2            A2B3      A2B2      A2B1      A2B0 
+--	linha 3     A3B3   A3B2      A3B1      A3B0 
+-- resultado C  R6     R5        R4        R3        R2        R1       R0
+
+-- OBS: O descolocamento dos valores é feito em "código", não foi alocado 7 colunas para cada linha
 ----------------------------------------------------------------------------------
+
+
 library IEEE;
-library work;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.numeric_std.ALL;
 use work.BCD.all;
@@ -35,6 +35,7 @@ end modulo_somador_linhas;
 
 architecture Behavioral of modulo_somador_linhas is
 	
+	-- chamada do modulo somador para somar os digitos de cada linha
 	component modulo_somador_simples
 		port(
 			DIGITO_1  : in std_logic_vector(3 downto 0);
@@ -45,12 +46,17 @@ architecture Behavioral of modulo_somador_linhas is
 		);
 	end component;
 	
+	-- definição de vetores para armazenar os carrys e os resultados intermediários
+	
+	-- vetor carry é usado para armazenar os carrys propagados entre somas de diferentes colunas
 	signal carry : array_BCD_7DIGITOS :=     (('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'),
 													      ('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'));
-	signal aux : array_BCD_6DIGITOS :=       (('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'),
-													      ('0', '0', '0', '0'), ('0', '0', '0', '0'));
-	signal carry_aux : array_BCD_5DIGITOS := (('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'),
-													      ('0', '0', '0', '0'));
+	
+	-- vetor aux é usado para armazenar a soma entre os digitos de uma mesma coluna e linhas diferentes (sem ser a ultima)
+	-- vetor carry_aux para armazenar o carry propagado entre as somas da mesma linha
+	signal aux, carry_aux : array_BCD_6DIGITOS := (('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'),
+													           ('0', '0', '0', '0'), ('0', '0', '0', '0'));
+											
 begin
 	resultado(0) <= linha0(0); -- coluna 0
 	
