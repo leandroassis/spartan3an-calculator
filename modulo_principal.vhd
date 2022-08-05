@@ -78,15 +78,20 @@ architecture Behavioral of modulo_principal is
 	signal estado_atual, proximo_estado : estados_maquina := digito0_0;
 	
 	signal numero_code : std_logic_vector(7 downto 0);
-	signal op, code_escrita : std_logic_vector(3 downto 0); -- numero em BCD lido do teclado e código de operação lido das switchs, respectivamente
+	signal op, code_escrita, apresenta, valor : std_logic_vector(3 downto 0) := "0000"; -- numero em BCD lido do teclado e código de operação lido das switchs, respectivamente
 	signal A,B : array_BCD_4DIGITOS; -- Vetor A e B para serem preenchidos digito à digito pela FSM
 	signal soma : array_BCD_5DIGITOS; -- Vetor para armazenar a saida do somador completo
 	signal multiplicacao : array_BCD_8DIGITOS; -- Vetor para armazenar a saida do multiplicador completo
 	signal write_lcd, is_empty, out_en : std_logic := '0'; -- variaveis de controle para enviar sinal de escrita no LCD no proximo clock e para verificar se a FIFO do teclado tem alguma tecla
+	signal count : integer := 4;
+	signal count2 : integer := 7;
 	
 begin
 	
-	lcd_display : lcd port map(numero_code(3 downto 0), write_lcd, open, LCD_DB, RS, RW, clk, OE, reset_maq);
+	valor <= code_escrita or apresenta;
+	
+	-- instância dos componentes
+	lcd_display : lcd port map(valor, write_lcd, open, LCD_DB, RS, RW, clk, OE, reset_maq);
 	
 	kbd: kb_code port map(clk, reset_maq, kbd_data, kbd_clock, not is_empty, numero_code, is_empty);
 	
@@ -94,52 +99,55 @@ begin
 	
 	multiplicador : modulo_multiplicador_completo port map(A, B, multiplicacao);
 	
-	-- FSM para ler digitos
-	process(numero_code)
+	-- Controle de escrita no LCD ao apertar ENTER
+	process(numero_code, clk)
 	begin
-		if numero_code(3 downto 0) = X"1101" then
-			estado_atual <= proximo_estado;
-			write_lcd <= '1';
-		else 
-			code_escrita <= numero_code(3 downto 0);
-			write_lcd <= '0';
+		if clk'event and clk = '1' then
+			if numero_code(3 downto 0) = X"1101" then -- quando o ENTER for pressionado
+				estado_atual <= proximo_estado; -- avança de estado
+				write_lcd <= '1'; -- escreve no LCD
+				code_escrita <= "0000"; -- seta code para zero
+			else -- senao
+				code_escrita <= numero_code(3 downto 0); -- guarda na variavel auxiliar de escrita para ser escrito no proximo clock
+				write_lcd <= '0'; -- não escreve no LCD
+			end if;
 		end if;
 	end process;
 	
 	process(numero_code, reset_maq)
 		begin
-			if reset_maq = '1' then
-				proximo_estado <= digito0_0;
-			elsif numero_code /= X"0D" and (op_code = "0001" or op_code = "1000") then
-				case estado_atual is
-					when digito0_0 =>
-						A(0) <= numero_code(3 downto 0);
-						proximo_estado <= digito1_0;
-					when digito1_0 =>
-						A(1) <= numero_code(3 downto 0);
-						proximo_estado <= digito2_0;
-					when digito2_0 =>
-						A(2) <= numero_code(3 downto 0);
-						proximo_estado <= digito3_0;
-					when digito3_0 =>
+			if reset_maq = '1' then -- se botao de reset for pressionado
+				proximo_estado <= digito0_0; -- volta para o estado inicial
+			elsif numero_code /= X"0D" and (op_code = "0001" or op_code = "1000") then -- se a tecla nao for enter e a chave de OPCODE estiver em valores válidos
+				case estado_atual is -- faz o chaveamento de estados
+					when digito0_0 => -- salva o primeiro digito de A (esquerda para a direita)
 						A(3) <= numero_code(3 downto 0);
+						proximo_estado <= digito1_0;
+					when digito1_0 => -- salva o segundo digito de A
+						A(2) <= numero_code(3 downto 0);
+						proximo_estado <= digito2_0;
+					when digito2_0 => -- salva o terceiro digito de A
+						A(1) <= numero_code(3 downto 0);
+						proximo_estado <= digito3_0;
+					when digito3_0 => -- salva o quarto digito de A
+						A(0) <= numero_code(3 downto 0);
 						proximo_estado <= operacao;
-					when operacao =>
+					when operacao => -- salva o OPCODE
 						op <= op_code;
 						proximo_estado <= digito0_1;
-					when digito0_1 =>
-						B(0) <= numero_code(3 downto 0);
-						proximo_estado <= digito1_1;
-					when digito1_1 =>
-						B(1) <= numero_code(3 downto 0);
-						proximo_estado <= digito2_1;
-					when digito2_1 =>
-						B(2) <= numero_code(3 downto 0);
-						proximo_estado <= digito3_1;
-					when digito3_1 =>
+					when digito0_1 => -- salva o primeiro digito de B (esquerda para a direita)
 						B(3) <= numero_code(3 downto 0);
+						proximo_estado <= digito1_1;
+					when digito1_1 => -- salva o segundo digito de B
+						B(2) <= numero_code(3 downto 0);
+						proximo_estado <= digito2_1;
+					when digito2_1 => -- salva o terceiro digito de B
+						B(1) <= numero_code(3 downto 0);
+						proximo_estado <= digito3_1;
+					when digito3_1 => -- salva o quarto digito de B
+						B(0) <= numero_code(3 downto 0);
 						proximo_estado <= resultado;
-					when resultado =>
+					when resultado => -- habilita a FSM que apresenta o resultado
 						proximo_estado <= resultado;
 						out_en <= '1';
 				end case;
@@ -147,16 +155,25 @@ begin
 	end process;
 	
 	-- FSM para apresentar o resultado
-	-- Essa FSM não funciona de forma propria, deve a cada clk enviar um digito BCD para o display
-	process(clk, estado_atual)
+	process(clk, estado_atual, op)
 	begin
-		if estado_atual /= resultado then
-			--code_escrita <= A(0);
-		elsif clk'event and clk='1' and out_en = '1' then
-			if op = "0001" then -- soma
-				code_escrita <= soma(4);
-			elsif op = "1000" then -- multipli
-				code_escrita <= multiplicacao(7);
+		if estado_atual = resultado then -- se estiver no estado de apresentar resultado
+		   if clk'event and clk='1' and out_en = '1' then -- a cada ciclo de clock
+				if op = "0001" then -- se a operação for soma
+					apresenta <= soma(count); -- apresenta o valor de cada um dos 5 digitos da soma (count ja inicia em 4)
+					if count = 0 then -- se chegou ao final desabilita a apresentação
+						count <= 4;
+						out_en <= '0';
+					else count <= count - 1; -- senao vai apresentando ate o digito mais a direita
+					end if;
+				else -- se a operação for multiplicação
+					apresenta <= multiplicacao(count2); -- apresenta o valor de cada um dos 8 digitos da multiplicação (count2 ja inicia em 7)
+					if count2 = 0 then -- se chegou ao final desabilita a apresentação
+						count2 <= 7; 
+						out_en <= '0';
+					else count2 <= count2 - 1; -- senão vai apresentando ate o digito mais a direita
+					end if;
+				end if;
 			end if;
 		end if;
 	end process;
