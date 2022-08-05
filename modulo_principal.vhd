@@ -82,7 +82,7 @@ architecture Behavioral of modulo_principal is
 	signal A,B : array_BCD_4DIGITOS; -- Vetor A e B para serem preenchidos digito à digito pela FSM
 	signal soma : array_BCD_5DIGITOS; -- Vetor para armazenar a saida do somador completo
 	signal multiplicacao : array_BCD_8DIGITOS; -- Vetor para armazenar a saida do multiplicador completo
-	signal write_lcd, is_empty, out_en : std_logic := '0'; -- variaveis de controle para enviar sinal de escrita no LCD no proximo clock e para verificar se a FIFO do teclado tem alguma tecla
+	signal write_lcd, is_empty, out_en, stop : std_logic := '0'; -- variaveis de controle para enviar sinal de escrita no LCD no proximo clock e para verificar se a FIFO do teclado tem alguma tecla
 	signal count : integer := 4;
 	signal count2 : integer := 7;
 	
@@ -102,16 +102,13 @@ begin
 	-- Controle de escrita no LCD ao apertar ENTER
 	process(numero_code, clk)
 	begin
-		if clk'event and clk = '1' then
-			if numero_code(3 downto 0) = X"1101" then -- quando o ENTER for pressionado
+			if numero_code = X"0D" then -- quando o ENTER for pressionado
 				estado_atual <= proximo_estado; -- avança de estado
 				write_lcd <= '1'; -- escreve no LCD
-				code_escrita <= "0000"; -- seta code para zero
 			else -- senao
 				code_escrita <= numero_code(3 downto 0); -- guarda na variavel auxiliar de escrita para ser escrito no proximo clock
 				write_lcd <= '0'; -- não escreve no LCD
 			end if;
-		end if;
 	end process;
 	
 	process(numero_code, reset_maq)
@@ -158,19 +155,19 @@ begin
 	process(clk, estado_atual, op)
 	begin
 		if estado_atual = resultado then -- se estiver no estado de apresentar resultado
-		   if clk'event and clk='1' and out_en = '1' then -- a cada ciclo de clock
+		   if clk'event and clk='1' and out_en = '1' and stop <= '0' then -- a cada ciclo de clock
 				if op = "0001" then -- se a operação for soma
 					apresenta <= soma(count); -- apresenta o valor de cada um dos 5 digitos da soma (count ja inicia em 4)
 					if count = 0 then -- se chegou ao final desabilita a apresentação
 						count <= 4;
-						out_en <= '0';
+						stop <= '1';
 					else count <= count - 1; -- senao vai apresentando ate o digito mais a direita
 					end if;
 				else -- se a operação for multiplicação
 					apresenta <= multiplicacao(count2); -- apresenta o valor de cada um dos 8 digitos da multiplicação (count2 ja inicia em 7)
 					if count2 = 0 then -- se chegou ao final desabilita a apresentação
 						count2 <= 7; 
-						out_en <= '0';
+						stop <= '1';
 					else count2 <= count2 - 1; -- senão vai apresentando ate o digito mais a direita
 					end if;
 				end if;
