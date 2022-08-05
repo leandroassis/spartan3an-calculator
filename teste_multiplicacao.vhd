@@ -32,7 +32,8 @@ use work.BCD.all;
 
 entity teste_multiplicacao is
 	port(
-		RESULTADO : out array_BCD_8DIGITOS
+		clk : in std_logic;
+		RESULTADO : out array_BCD_5DIGITOS
 	);
 end teste_multiplicacao;
 
@@ -46,14 +47,47 @@ architecture Behavioral of teste_multiplicacao is
 		);
 	end component;
 	
+	component modulo_somador_completo
+		port(
+			A : in array_BCD_4DIGITOS;
+			B : in array_BCD_4DIGITOS;
+			RESULTADO : out array_BCD_5DIGITOS
+		);
+	end component;
+	
 	signal E1, E2 : array_BCD_4DIGITOS;
+	signal estado : std_logic_vector(1 downto 0) := "00";
 	
 begin
+
+	process(clk, estado)
+	begin
+		if clk'event and clk = '1' then
+			case estado is
+				when "00" =>
+					E1 <= (('1', '0', '0', '1'), ('1', '0', '0', '1'), ('1', '0', '0', '1'), ('1', '0', '0', '1'));
+					E2 <= (('1', '0', '0', '1'), ('1', '0', '0', '1'), ('1', '0', '0', '1'), ('1', '0', '0', '1'));
+					estado <= "01";
+				when "01" =>
+					E1 <= (('0', '0', '0', '1'), ('0', '1', '0', '1'), ('0', '0', '1', '1'), ('0', '0', '0', '0'));
+					E2 <= (('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '1', '1'), ('1', '0', '0', '1'));
+					estado <= "10";
+				when "10" =>
+					E1 <= (('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '1', '1', '0'), ('1', '0', '0', '0'));
+					E2 <= (('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '1', '0'), ('0', '1', '0', '1'));
+					estado <= "11";
+				when "11" =>
+					E1 <= (('0', '0', '0', '1'), ('0', '0', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'));
+					E2 <= (('0', '0', '0', '0'), ('0', '1', '0', '0'), ('0', '0', '0', '0'), ('0', '0', '0', '0'));
+					estado <= "00";
+				when others =>
+					estado <= "00";
+			end case;
+		end if;
+	end process;
 	
-	E1 <= (('1', '0', '0', '0'), ('1', '0', '0', '0'), ('1', '0', '0', '0'), ('1', '0', '0', '0'));
-	E2 <= (('0', '0', '0', '1'), ('0', '0', '0', '1'), ('0', '0', '0', '1'), ('0', '0', '0', '1'));
-	
-	multi : modulo_multiplicador_completo port map(E1, E2, RESULTADO);
+	--multi : modulo_multiplicador_completo port map(E1, E2, RESULTADO);
+	somador : modulo_somador_completo port map(E1, E2, RESULTADO);
 
 
 end Behavioral;
