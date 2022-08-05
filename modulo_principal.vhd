@@ -82,16 +82,17 @@ architecture Behavioral of modulo_principal is
 	signal A,B : array_BCD_4DIGITOS; -- Vetor A e B para serem preenchidos digito à digito pela FSM
 	signal soma : array_BCD_5DIGITOS; -- Vetor para armazenar a saida do somador completo
 	signal multiplicacao : array_BCD_8DIGITOS; -- Vetor para armazenar a saida do multiplicador completo
-	signal write_lcd, is_empty, out_en, stop : std_logic := '0'; -- variaveis de controle para enviar sinal de escrita no LCD no proximo clock e para verificar se a FIFO do teclado tem alguma tecla
+	signal write_lcd, is_empty, out_en, stop, habilita_lcd : std_logic := '0'; -- variaveis de controle para enviar sinal de escrita no LCD no proximo clock e para verificar se a FIFO do teclado tem alguma tecla
 	signal count : integer := 4;
 	signal count2 : integer := 7;
 	
 begin
 	
 	valor <= code_escrita or apresenta;
+	habilita_lcd <= write_lcd or out_en;
 	
 	-- instância dos componentes
-	lcd_display : lcd port map(valor, write_lcd, open, LCD_DB, RS, RW, clk, OE, reset_maq);
+	lcd_display : lcd port map(valor, habilita_lcd, open, LCD_DB, RS, RW, clk, OE, reset_maq);
 	
 	kbd: kb_code port map(clk, reset_maq, kbd_data, kbd_clock, not is_empty, numero_code, is_empty);
 	
@@ -106,8 +107,11 @@ begin
 				estado_atual <= proximo_estado; -- avança de estado
 				write_lcd <= '1'; -- escreve no LCD
 			else -- senao
-				code_escrita <= numero_code(3 downto 0); -- guarda na variavel auxiliar de escrita para ser escrito no proximo clock
 				write_lcd <= '0'; -- não escreve no LCD
+				if out_en = '0' then -- se não estiver com a saída liberada
+					code_escrita <= numero_code(3 downto 0); -- guarda na variavel auxiliar de escrita para ser escrito no proximo clock
+				else code_escrita <= "0000";
+				end if;
 			end if;
 	end process;
 	
